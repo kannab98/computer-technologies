@@ -1,6 +1,0 @@
-[submodule "preamble"]
-	path = tasks/preamble
-	url = git@github.com:kannab98/latex-preamble
-[submodule "tasks/preamble"]
-	path = tasks/preamble
-	url = git@github.com:kannab98/latex-preamble
