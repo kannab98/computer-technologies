@@ -1,0 +1,13 @@
+\usepackage{nomencl}
+\makenomenclature  
+
+\makeatletter
+    \newcommand{\whereNoStar}[2]{#1 -- #2\nomenclature{#1}{#2}}
+    \newcommand{\whereStar}[2]{#1\nomenclature{#1}{#2}}
+    \newcommand{\where}{
+                 \@ifstar
+                 \whereStar%
+                 \whereNoStar%
+    }
+\makeatother
+
