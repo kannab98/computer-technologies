@@ -1,0 +1,3 @@
+[submodule "preamble"]
+	path = preamble
+	url = git@github.com:kannab98/latex-preamble
