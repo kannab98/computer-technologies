@@ -29,7 +29,7 @@ delta = 0.4
 
 
 
-p = np.ndarray([[alpha, beta, 1], [gamma, delta, 0]])
+p = np.array([[alpha, beta, 1], [gamma, delta, 0]])
 
 
 # Changed integrator. This one gives a more correct solution
