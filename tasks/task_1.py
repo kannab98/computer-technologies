@@ -7,24 +7,53 @@ from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
 
 
-
-def dx(t, x, y, a, b):
-    return (a - b*x) * y
-
-def dy(t, y, x, a, b):
-    return (-a + b*x)
-
-def predator_prey(x, a, b, c, d):
-    t = [0, 10]
-    return [
-        solve_ivp(dx, t_span=t, y0=[x[0]], args=(x[1], a, b)).y,
-        solve_ivp(dy, t_span=t, y0=[x[1]], args=(x[0], c, d)).y
-    ]
-
-root = predator_prey([50, 100], 1,1,1,1)
-
-plt.plot(root[0][0])
-plt.savefig("kek.png")
+def predator_prey(t: np.array, z: np.ndarray, p:np.ndarray, dtype="LV"):
+    x, y = z
+    if dtype == "LV":
+        func = [
+            p[0][0]*x - p[0][1]*x*y,
+            p[1][0]*x*y - p[1][1]*y
+        ]
+    elif dtype == "McA":
+        func = [
+            p[0][0]*x - p[0][1]*x*y - p[0][2]*x*x,
+            p[1][0]*x*y - p[1][1]*y - p[1][2]*y*y,
+        ]
+    return func
 
 
+alpha = 1.1
+beta = 0.4
+gamma = 1.1
+delta = 0.4
 
+
+
+p = np.ndarray([[alpha, beta, 1], [gamma, delta, 0]])
+
+
+# Changed integrator. This one gives a more correct solution
+# t_span -- Interval of integration (t0, tf). The solver starts with t=t0 and integrates until it reaches t=tf.
+# y0 -- Initial state. [prey, predator]
+
+sol = solve_ivp(predator_prey, t_span=[0, 500], y0=[10, 2], args=(p,"McA"))
+
+
+plt.figure()
+plt.plot(sol.y[0])
+plt.ylabel("Зайцы")
+plt.xlabel("Время")
+
+
+plt.figure()
+plt.plot(sol.y[1])
+plt.ylabel("Волки")
+plt.xlabel("Время")
+
+plt.figure()
+plt.plot(sol.y[0], sol.y[1], ".-")
+plt.xlabel("Зайцы")
+plt.ylabel("Волки")
+
+
+plt.show()
