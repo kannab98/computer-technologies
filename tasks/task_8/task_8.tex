@@ -3,6 +3,7 @@
 \NewDocumentCommand{\codeword}{v}{%
 \texttt{\textcolor{gray}{#1}}%
 }
+\input{python.tex}
 
 \title{Компьютерные технологии}
 \author{Гвоздков Е.}
@@ -91,6 +92,10 @@
 Каждая планета - инстанция класса. Комета описывается отдельным классом $\codeword{Comet}$, в котором также 
 присутствует метод \codeword{evaluate_model}, который является основным в моделировании.
 
+\newpage
+\section{Исходный код}
+\lstinputlisting[label={lst:task8}, caption={Исходный код задания}]{SolarSystem.py}
+\lstinputlisting[label={lst:task8_2}, caption={Исходный код задания}]{simulation.py}
 
 
 \end{document}

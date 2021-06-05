@@ -48,7 +48,6 @@ class Comet():
     
     def convert_coord_decart_to_polar(self, x, y):
         r = np.sqrt(x**2 + y**2)
-        # ????????????
         theta = np.arctan2(y, x)
         return r, theta
 
@@ -65,16 +64,13 @@ class Comet():
         return F_x, F_y
 
     def calculate_summary_acceleration(self, bodies):
-        F_x_list = []
-        F_y_list = []
+        a_x_list, a_y_list = [], []
         for body in bodies:
             F_x, F_y = self.calculate_force_to_body(body)
-            F_x_list.append(F_x)
-            F_y_list.append(F_y)
-        F_x_mean = np.mean(F_x_list)
-        F_y_mean = np.mean(F_y_list)
-        a_x = F_x_mean/self.mass
-        a_y = F_y_mean/self.mass
+            a_x_list.append(F_x/self.mass)
+            a_y_list.append(F_y/self.mass)
+        a_x = np.mean(a_x_list)
+        a_y = np.mean(a_y_list)
         return a_x, a_y
 
     def model_func(self, t, data_vec):
@@ -95,20 +91,10 @@ class Comet():
 
     def evaluate_model(self, t_end, bodies, t_eval=None, method='RK45'):
         self.bodies = bodies
-        res = solve_ivp(self.model_func, t_end, [self.x, self.y, self.v_x, self.v_y],
+        res = solve_ivp(self.model_func, t_end,
+                        y0=[self.x, self.y, self.v_x, self.v_y],
                         t_eval=t_eval, method=method)
         return res
-
-    # def calculate_next_position(self, dt):
-    #     new_x = self.x + self.v_x*dt
-    #     new_y = self.y + self.v_y*dt
-    #     self.x = new_x
-    #     self.y = new_y
-    #     new_r, new_theta = self.convert_coord_decart_to_polar(new_x, new_y)
-    #     self.r = new_r
-    #     self.theta = new_theta
-    #     self.recorded_theta.append(new_theta)
-    #     self.recorded_r.append(new_r)
 
 
 class CelestialBody():
@@ -175,12 +161,10 @@ TheSun = Sun()
 Mercury = CelestialBody("Mercury", 3.33022*10**23, 57909227000, 0.20563593, 48.33167, -0.2*np.pi, [1,0.5,0])
 Venus = CelestialBody("Venus", 4.8675*10**24, 108208930000, 0.0068, 76.67069, 0.1*np.pi, [1,0,0.4])
 Earth = CelestialBody("Earth", 5.9726*10**24, 149598261000, 0.01671123, 348.73936, 0.8*np.pi, [0,1,0.3])
-# Earth = CelestialBody("Earth", M0, 149598261000, 0.01671123, 348.73936, 0.8*np.pi, [0,1,0.3])
 Mars = CelestialBody("Mars", 6.4171*10**23, 2.2794382*10**8*1000, 0.0933941, 49.57854, 1.15*np.pi, [1,0,0])
 Jupiter = CelestialBody("Jupiter", 1.8986*10**27, 7.785472*10**8*1000, 0.048775, 100.55615, -0.02*np.pi, [0.9,0.7,0.3])
 Saturn = CelestialBody("Saturn", 5.6846*10**26, 1429394069000, 0.055723219, 113.642, -0.08*np.pi, [0.6, 0.1, 0.3])
 Uranus = CelestialBody("Uranus", 8.6813*10**25, 2876679082000, 0.044, 73.9898, 0.06*np.pi, [0,0.5,0.9])
 Neptune = CelestialBody("Neptune", 1.0243*10**26, 4503443661000, 0.011214269, 131.794, 0.3*np.pi, [0,0.1,1])
-# Planets = [Mercury, Venus, Earth]
 Planets = [Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune]
 System = [TheSun, Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune]
