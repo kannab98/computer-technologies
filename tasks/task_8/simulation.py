@@ -14,7 +14,7 @@ TheComet = Comet("Comet",
 
 # Параметры симуляции
 integration_method = 'RK23'
-t_end = 5*10**9  
+t_end = 1*10**9  
 dt = 2*10**6
 t = np.arange(0, t_end, dt)
 
@@ -44,8 +44,8 @@ for Planet in Planets:
             '--', color=Planet.color, label=Planet.name)
     ax.plot(Planet.recorded_theta[-1],
             Planet.recorded_r[-1], 'o', color=Planet.color)
-ax.plot(comet_theta, comet_r, color='k', label="Comet")
-ax.plot(comet_theta[-1], comet_r[-1], 'o', color='k')
+# ax.plot(comet_theta, comet_r, color='k', label="Comet")
+# ax.plot(comet_theta[-1], comet_r[-1], 'o', color='k')
 ax.plot(0, 0, 'o', color='#FFDF00', label="Sun")
 
 plt.legend()
