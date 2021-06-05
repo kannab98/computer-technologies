@@ -38,13 +38,17 @@ for i, n in enumerate(N):
     t0[i] = time3- time2
 
 plt.figure()
-plt.plot(N, np.abs(V0-V_true)/V_true, label="Monte-Carlo")
-plt.plot(N, np.abs(V-V_true)/V_true, label="Rectangle")
+plt.plot(N, 100*np.abs(V0-V_true)/V_true, label="Monte-Carlo")
+plt.plot(N, 100*np.abs(V-V_true)/V_true, label="Rectangle")
+plt.xlabel("$N$")
+plt.ylabel("$\\varepsilon, \\%$")
 plt.legend()
 
 plt.figure()
-plt.plot(N, t0, label="Monte-Carlo")
-plt.plot(N, t, label="Rectangle")
+plt.plot(N, 1e3*t0, label="Monte-Carlo")
+plt.plot(N, 1e3*t, label="Rectangle")
+plt.ylabel("$t, \\text{ms}$")
+plt.xlabel("$N$")
 plt.legend()
 
 

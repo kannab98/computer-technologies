@@ -5,9 +5,10 @@ from numpy.linalg import norm
 from scipy import integrate
 
 def cart2sphere(r):
+    eps = 1e-8
     R =  norm(r, axis=0)
-    El = np.arccos(r[-1]/R)
-    Az = np.arctan(r[1]/r[0])
+    El = np.arccos(r[2]/(R+eps))
+    Az = np.arctan2(r[1], (r[0]+eps))
     return R, El, Az
 
 
@@ -68,18 +69,20 @@ class Tor(object):
 
         r0 = self.r
         R0 = self.R
-        R, El, Az = cart2sphere(r)
 
-        Rproj = R * np.sin(El)
-        mask = (R0 - r0 <= Rproj) & (Rproj <= R0 + r0) & (np.abs(r[2]) <= r0 )
+        rho2 = np.sum(r[0:2]**2, axis=0)
+        R2 = np.sum(r**2, axis=0)
+        mask = (R2 + R0**2 - r0**2)**2 - 4*R0**2*(rho2) <= 0
         return mask
+
+
 
     def volume(self):
         return 2*np.pi**2*self.R*self.r**2
 
     def grid(self, num, dtype="linear"):
         R = self.R
-        r = self.R
+        r = self.r
 
         if dtype == "linear":
             return cartesian_meshgrid([-R-r, -R-r, -r], [R+r, R+r, +r], num)
