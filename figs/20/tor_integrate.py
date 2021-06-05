@@ -2,54 +2,34 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.style import use
-use(["science"])
+use(["science", "vibrant"])
 
-import sys
-sys.path.append(".")
-from time import time
+import pandas as pd
 
-from tasks.task_20 import Tor, rect, monte_carlo, cartesian_meshgrid, cartesian_random
+df = pd.read_csv("figs/20/tor.csv", sep="\t", header=0)
 
-R = (2.5, 0.5)
-obj = Tor(a = R)
-a = np.sum(R)
-
-N = np.arange(10, 200, 5)
-V = np.zeros(N.size)
-V0 = np.zeros(N.size)
-t = np.zeros(N.size)
-t0 = np.zeros(N.size)
-V_true = obj.volume()
-
-for i, n in enumerate(N):
-    r, dr = obj.grid([n,n,n], dtype="linear")
-    r0  = obj.grid([n,n,n], dtype="random")
-
-
-    mask = obj.mask(r)
-    idx = np.where(mask)
-
-    time1 = time()
-    V[i] = rect(mask, dr) 
-    time2 = time()
-    t[i] = time2- time1
-    V0[i] = monte_carlo(mask, r0)
-    time3 = time()
-    t0[i] = time3- time2
+N = df.iloc[:,0].values
+eps_rect = df.iloc[:,3].values
+eps_monte = df.iloc[:,4].values
+t_rect = df.iloc[:,5].values
+t_monte = df.iloc[:,6].values
 
 plt.figure()
-plt.plot(N, 100*np.abs(V0-V_true)/V_true, label="Monte-Carlo")
-plt.plot(N, 100*np.abs(V-V_true)/V_true, label="Rectangle")
+plt.plot(N, eps_rect, label="Monte-Carlo")
+plt.plot(N, eps_monte, label="Rectangle")
+plt.ylim([None,10])
 plt.xlabel("$N$")
 plt.ylabel("$\\varepsilon, \\%$")
 plt.legend()
+plt.savefig("figs/20/eps")
 
 plt.figure()
-plt.plot(N, 1e3*t0, label="Monte-Carlo")
-plt.plot(N, 1e3*t, label="Rectangle")
+plt.plot(N, 1e3*t_monte, label="Monte-Carlo")
+plt.plot(N, 1e3*t_rect, label="Rectangle")
 plt.ylabel("$t, \\text{ms}$")
 plt.xlabel("$N$")
 plt.legend()
+plt.savefig("figs/20/time")
 
 
 

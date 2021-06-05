@@ -1,10 +1,8 @@
 \include{preamble/preamble.tex}
 \title{Компьютерные технологии}
-\author{Понур К.А. 
-    \thanks{исходники (*.py, *.tex):
-    https://github.com/kannab98/computer-technologies}
-}
-\input{python}
+\author{Понур К.А.}
+
+\input{python.tex}
 \begin{document}
 \maketitle
 
@@ -28,18 +26,12 @@
 квадратурная формула на линейной координатной сетке с шагом
 $h=\frac{b-a}{n}$ примет вид
 \begin{equation}
-    \label{eq:}
-    \int\limits_{a}^{b} f(x) \dd x \approx h\frac{f(x_0)}{2} +
-    h\frac{f(x_n)}{2} + h\sum\limits_{i=1}^{n-1} f(x_i) 
+    \label{eq:rect}
+    \int\limits_{a}^{b} f(x) \dd x \approx h\sum\limits_{i=1}^{n} f(x_i) 
 \end{equation}
 
-Погрешность  вычисления интеграла на $i$-ом элементарном отрезке в таком случае определяется формулой
-\begin{equation}
-    \label{eq:}
-    \epsilon(f) = \dv[2]{f(\xi)}{\xi} \cdot \frac{h^2}{24}(x_i - x_{i-1}),
-\end{equation}
-где $\xi_i = \frac{x_{i-1} + x_i}{2}$ -- середина рассматриваемого элементарного
-отрезка.
+Для N-мерного интеграла стоит рассматривать \eqref{eq:rect} как взвешенную
+сумму по всем имеющимся размерностям.
 
 \subsection{Метод Монте-Карло}%
 \label{sub:metod_monte_karlo}
@@ -73,33 +65,28 @@ $h=\frac{b-a}{n}$ примет вид
 \end{equation}
 И сам интеграл
 \begin{equation}
-    \label{eq:}
-    \mean{J} \approx \frac{b-a}{n} \sum\limits_{i=1}^{n} f(x_i)
+    \label{eq:monte-carlo}
+    J \approx \frac{b-a}{n} \sum\limits_{i=1}^{n} f(x_i)
 \end{equation}
 
+Уравнение \eqref{eq:monte-carlo} обобщается на случай N-мерного
+интеграла
+\begin{equation}
+    \label{eq:}
+    J \approx \prod\limits_{j=1}^N \qty(b_j - a_j) \cdot
+    \frac{1}{n}\sum\limits_{i=1}^{m} f(x_i), 
+\end{equation}
+где $\prod\limits_{j=1}^N \qty(b_j - a_j)$  -- объем $N$-мерного
+параллелепипеда,  $m$ -- точки  $N$-мерного пространства, которые
+принадлежат области интегрирования.
 
 
-%\subsection{Adaptive quadrature}%
-%\label{sub:adaptive_quadrature}
 
+\section{Тестирование алгоритмов на тестовом объеме}
 
-%Для сравнения с предыдущими методами интегрирования применим более общий метод
-%численного интегрирования Adaptive Quadrature, используемый в библиотеке SciPy
-%\cite{SciPy} на основе Фортран-библиотеке численного интегрирования QUADPACK
-%\cite{QuadPack}.
-
-%В основе метода лежит интерполяции искомой функции $f(x)$ детерменированными
-%полиномами на определенных интервалах, например, полиномами Чебышева или
-%полиномами Лежандра. 
-
-
-\section{Реализации на языке Python}
-
-Прежде чем переходить к телу достаточно сложного объема, программа отлаживалась
-на простейшем теле для интегрирование -- кубе (см. рис. \ref{fig:scatter} ).
-%В качестве тела достаточно сложного объема был выбран тороид, располагаемый в
-%начале координат и задаваемый параметрическим уравнением в сферической системе
-%координат
+В качестве тестового тела был выбран тороид, располагаемый в
+начале координат и задаваемый параметрическим уравнением в сферической системе
+координат
 \begin{equation}
     \label{eq:tor}
     \begin{cases}
@@ -110,8 +97,9 @@ $h=\frac{b-a}{n}$ примет вид
     \phi \in [0, 2\pi), \psi \in [-\pi, \pi),
 \end{equation}
 где $\phi$ -- азимутальный угол в плоскости  $xy$,  $\psi$ -- угол элевации,
-отсчитываемый от оси $z$. На рис. \ref{fig:tor}
-\begin{figure}[h]
+отсчитываемый от оси $z$. Характерная форма поверхности изображена на рис. \ref{fig:tor}.
+
+\begin{figure}[H]
     \centering
     \begin{subfigure}{0.49\linewidth}
         \centering
@@ -121,34 +109,66 @@ $h=\frac{b-a}{n}$ примет вид
         \centering
         \includegraphics[width=1\linewidth]{figs/20/tor-top}
     \end{subfigure}
-    \caption{Тороид с внутренним радиусом $r=1$  и внешним радиусом  $R=2$}
+    \caption{Тороид с внутренним радиусом образующей $r=1$  и радиусом до
+    образующей $R=2$}
     \label{fig:tor}
 \end{figure}
 
-\begin{figure}[h]
+Вычисление объема тела предполагает вычисление трехмерного интеграла по
+занимаемой телом области с
+подынтегральной функцией $f(x,y,z) = 1$. 
+Несмотря на нетривиальность интегрирования данного тела, его объем аналитически
+вычисляется
+\begin{equation}
+    \label{eq:}
+    V = 2\pi^2 R r^2,
+\end{equation}
+что позволит нам оценивать точность методов интегрирования сравнивая их
+относительную ошибку
+\begin{equation}
+    \label{eq:}
+    \epsilon = \frac{\abs{V-\tilde V}}{V},
+\end{equation}
+где $\tilde V$ -- оцененный объем.
+
+Для реализации вышеперечисленных методов был выбран Python с библиотекой NumPy
+для численных расчетов и Matplotlib для визуализации данных. Базовые методы и
+объекты класса представлены в лист. \ref{lst:task20}. 
+
+
+На рис. \ref{sfig:results:eps} представлено сравнение относительной ошибки
+вычисления объема тороида методами Монте-Карло и прямоугольниками при различном
+количестве точек $N$. На рис. \ref{sfig:results:time} представлено
+сравнение времени выполнения программы\footnote{Выбросы на графике времени
+выполнения программы возникли из-за компиляции на фоне \LaTeX-документа :)}.
+
+\begin{figure}[H]
     \centering
     \begin{subfigure}{0.49\linewidth}
         \centering
-        \includegraphics[width=1\linewidth]{example-image-a}
+        \includegraphics[width=1\linewidth]{figs/20/eps}
         \caption{}
+        \label{sfig:results:eps}
     \end{subfigure}
     \begin{subfigure}{0.49\linewidth}
         \centering
-        \includegraphics[width=1\linewidth]{figs/20/sphere_scatter.png}
+        \includegraphics[width=1\linewidth]{figs/20/time}
         \caption{}
+        \label{sfig:results:time}
     \end{subfigure}
-    \begin{subfigure}{0.49\linewidth}
-        \centering
-        \includegraphics[width=1\linewidth]{figs/20/tor_scatter.png}
-        \caption{}
-    \end{subfigure}
-    \label{fig:scatter}
-    \caption{Точки в декартовых координатах, принадлежащие поверхностям
-    (a) куба, (b) сферы, (c) тороида и участвующие в интегрировании}
+    \caption{Сравнение (a) относительной ошибки вычисления интеграла и (б)
+    времени вычисления для различного количества точек. $N$ -- количество точек
+вдоль одной размерности (реальное количество точек $N^3$).}
+    \label{fig:results}
 \end{figure}
 
+Стоит заметить, что метод прямоугольников проиграл методу Монте-Карло как по
+времени выполнения, так и по результативной точности. 
 
 
-\lstinputlisting[label={lst:spectrum}, caption={}]{tasks/task_20.py}
+
+\newpage
+\section{Исходный код}
+\lstinputlisting[label={lst:task20}, caption={Исходный код задания}]{tasks/task_20.py}
 
 \end{document}
