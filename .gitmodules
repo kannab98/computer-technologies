@@ -1,3 +1,3 @@
-[submodule "reports/preamble"]
-	path = reports/preamble
-	url = git@github.com:kannab98/latex-preamble
+[submodule "preamble"]
+	path = preamble
+	url = git@github.com:kannab98/latex-preamble.git
