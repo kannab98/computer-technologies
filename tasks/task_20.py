@@ -91,12 +91,7 @@ class Tor(object):
 
 
 def monte_carlo(func: np.ndarray, r: np.ndarray):
-
-    if len(r.shape) > 2:
-        axis = (1,-1)
-    else:
-        axis = 1
-
+    axis = 1
     area = np.prod(r.max(axis) - r.min(axis), dtype=np.float64)
     return np.mean(func) * area 
 
