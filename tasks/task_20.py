@@ -1,50 +1,126 @@
 import numpy as np
+from numpy import float64, random, where
+import matplotlib.pyplot as plt
+from numpy.linalg import norm
+from scipy import integrate
 
-def tor(r=1, R=2):
-    """
-    Генерация тороидальной поверхности
-    """
-    el = np.linspace(-np.pi, np.pi, 32, endpoint=True)
-    az = np.linspace(0, 2*np.pi, 32, endpoint=True)
-
-    el, az = np.meshgrid(az, el)
+def cart2sphere(r):
+    R =  norm(r, axis=0)
+    El = np.arccos(r[-1]/R)
+    Az = np.arctan(r[1]/r[0])
+    return R, El, Az
 
 
-    x = (R + r*np.cos(el)) * np.cos(az) 
-    y = (R + r*np.cos(el)) * np.sin(az) 
-    z = r * np.sin(el)
+def sphere2cart(r):
+    X = r[0] * np.sin(r[1]) * np.cos(r[2])
+    Y = r[0] * np.sin(r[1]) * np.sin(r[2])
+    Z = r[0] * np.cos(r[1])
+    return X, Y, Z
 
-    return x, y, z
+class Cube(object):
+    def __init__(self, a: float) -> None:
+        self.a = a
 
-def cube(a=2):
-    x = np.linspace(0, a)
-    y = np.linspace(0, a)
-    z = np.linspace(0, a)
+    def mask(self, r):
+        a = self.a
+        mask = (-a <= r) & (r <= a) 
+        mask = np.prod(mask, axis=0, dtype=bool)
+        return mask
+
+    def volume(self):
+        return (2*self.a)**3
+    
+    def grid(self, num, dtype="linear"):
+        a = self.a
+        if dtype == "linear":
+            return cartesian_meshgrid([-a, -a, -a], [a, a, a], num)
+        elif dtype == "random":
+            return cartesian_random([-a, -a, -a], [a, a, a], np.prod(num))
+
+
+class Sphere(object):
+    def __init__(self, a: float) -> None:
+        self.a = a
+    
+    def mask(self, r):
+        a = self.a
+        rho = norm(r, axis=0)
+        mask = (rho <= a)
+        return mask
+
+    def volume(self):
+        return 4/3*np.pi*self.a**3
+
+    def grid(self, num, dtype="linear"):
+        a = self.a
+        if dtype == "linear":
+            return cartesian_meshgrid([-a, -a, -a], [a, a, a], num)
+        elif dtype == "random":
+            return cartesian_random([-a, -a, -a], [a, a, a], np.prod(num))
+
+
+class Tor(object):
+    def __init__(self, a: tuple) -> None:
+        self.R = a[0]
+        self.r = a[1]
+
+    def mask(self, r):
+
+        r0 = self.r
+        R0 = self.R
+        R, El, Az = cart2sphere(r)
+
+        Rproj = R * np.sin(El)
+        mask = (R0 - r0 <= Rproj) & (Rproj <= R0 + r0) & (np.abs(r[2]) <= r0 )
+        return mask
+
+    def volume(self):
+        return 2*np.pi**2*self.R*self.r**2
+
+    def grid(self, num, dtype="linear"):
+        R = self.R
+        r = self.R
+
+        if dtype == "linear":
+            return cartesian_meshgrid([-R-r, -R-r, -r], [R+r, R+r, +r], num)
+        elif dtype == "random":
+            return cartesian_random([-R-r, -R-r, -r], [R+r, R+r, +r], np.prod(num))
+
+
+def monte_carlo(func: np.ndarray, r: np.ndarray):
+
+    if len(r.shape) > 2:
+        axis = (1,-1)
+    else:
+        axis = 1
+
+    area = np.prod(r.max(axis) - r.min(axis), dtype=np.float64)
+    return np.mean(func) * area 
+
+def rect(mask: np.ndarray, dr: np.ndarray):
+    dR = np.prod(dr, axis=0, where=mask)
+    return np.sum(dR, where=mask)
+
+def cartesian_meshgrid(start, stop, num):
+    x = np.linspace(start[0], stop[0], num[0])
+    y = np.linspace(start[1], stop[1], num[1])
+    z = np.linspace(start[2], stop[2], num[2])
+
+    dx = np.zeros_like(x)
+    dy = np.zeros_like(y)
+    dz = np.zeros_like(z)
+
+    dx[1:] = np.diff(x)
+    dy[1:] = np.diff(y)
+    dz[1:] = np.diff(z)
+
     x,y,z = np.meshgrid(x,y,z)
-    return x,y,z
+    dx,dy,dz = np.meshgrid(dx,dy,dz)
 
-def monte_carlo(func: np.ndarray, x: np.ndarray, y: np.ndarray):
-    V = np.sum(func)
-    return V
+    return np.array([x,y,z]), np.array([dx,dy,dz])
 
-def crect(func: np.ndarray, x: np.ndarray, y: np.ndarray):
-    V = 0
-    for i in range(1, func.shape[0]):
-        for j in range(1, func.shape[1]):
-            for k in range(1, func.shape[2]):
-                V += (func[i,j,k] - func[i-1, j-1, k-1]) * \
-                        (x[i,j,k] - x[i-1, j-1, k-1]) * \
-                        (y[i,j,k] - y[i-1, j-1, k-1])
-    return V 
-
-a = 3
-s = 50
-x = np.linspace(0, a, s)
-y = np.linspace(0, a, s)
-z = np.linspace(0, a, s)
-x,y,z = np.meshgrid(x,y,z)
-
-V = np.sum(z)
-V0 = crect(z,x,y)
-print(V, V0)
-
+def cartesian_random(start, stop, size):
+    x = random.uniform(start[0], stop[0], size)
+    y = random.uniform(start[1], stop[1], size)
+    z = random.uniform(start[2], stop[2], size)
+    return np.array([x,y,z])

@@ -21,7 +21,6 @@ def predator_prey(t: np.array, z: np.ndarray, p:np.ndarray, dtype="LV"):
         ]
     return func
 
-
 alpha = 1.1
 beta = 0.4
 gamma = 1.1
