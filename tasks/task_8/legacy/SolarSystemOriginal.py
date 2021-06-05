@@ -134,7 +134,7 @@ class CelestialBody():
         self.recorded_r = [self.r]
 
 TheSun = Sun()
-TheComet = Comet("Comet", 3.33022*10**23, 7.785472*10**8*1000, 3*np.pi/4, 100, 4500)
+TheComet = Comet("Comet", 3.33022*10**23, 7.785472*10**8*1000, 3*np.pi/4, 0, 1500)
 
 Mercury = CelestialBody("Mercury", 3.33022*10**23, 57909227000, 0.20563593, 48.33167, -0.2*np.pi, [1,0.5,0])
 Venus = CelestialBody("Venus", 4.8675*10**24, 108208930000, 0.0068, 76.67069, 0.1*np.pi, [1,0,0.4])
