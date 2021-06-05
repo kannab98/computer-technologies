@@ -1,7 +1,7 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
-from SolarSystem import System, TheSun, Planets, TheComet
+from SolarSystemOriginal import System, TheSun, Planets, TheComet
 
 # dt = 1
 dt = 10000000

@@ -3,22 +3,16 @@
 # от времени при различных начальных параметрах, а также оцените точность интегрирования в
 # зависимости от схемы интегрирования и величины шага интегрирования.
 import numpy as np
-from scipy.integrate import solve_ivp
-import matplotlib.pyplot as plt
 
 G = 6.67430*10**(-11)
 M0 = 1.9885*10**30
+
 
 class Sun():
     def __init__(self):
         self.mass = M0
         self.r = 0
         self.theta = 0
-    
-    def calculate_position_by_time(self, t):
-        self.r = 0
-        self.theta = 0
-        return self.r, self.theta
 
 
 class Comet():
@@ -77,38 +71,16 @@ class Comet():
         a_y = F_y_mean/self.mass
         return a_x, a_y
 
-    def model_func(self, t, data_vec):
-        #  data_vec = [x,y, vx,vy]
-        coords = data_vec[0:2]
-        vel = data_vec[2:]
-
-        self.x, self.y = coords[0], coords[1]
-        self.r = np.sqrt(coords[0]**2 + coords[1]**2)
-        self.theta = np.arctan2(coords[1], coords[0])
-
-        for body in self.bodies:
-            body.calculate_position_by_time(t)
-        ax, ay = self.calculate_summary_acceleration(self.bodies)
-        dvdt = [ax, ay]
-        # returns r', v'
-        return np.hstack((vel, dvdt))
-
-    def evaluate_model(self, t_end, bodies, t_eval=None, method='RK45'):
-        self.bodies = bodies
-        res = solve_ivp(self.model_func, t_end, [self.x, self.y, self.v_x, self.v_y],
-                        t_eval=t_eval, method=method)
-        return res
-
-    # def calculate_next_position(self, dt):
-    #     new_x = self.x + self.v_x*dt
-    #     new_y = self.y + self.v_y*dt
-    #     self.x = new_x
-    #     self.y = new_y
-    #     new_r, new_theta = self.convert_coord_decart_to_polar(new_x, new_y)
-    #     self.r = new_r
-    #     self.theta = new_theta
-    #     self.recorded_theta.append(new_theta)
-    #     self.recorded_r.append(new_r)
+    def calculate_next_position(self, dt):
+        new_x = self.x + self.v_x*dt
+        new_y = self.y + self.v_y*dt
+        self.x = new_x
+        self.y = new_y
+        new_r, new_theta = self.convert_coord_decart_to_polar(new_x, new_y)
+        self.r = new_r
+        self.theta = new_theta
+        self.recorded_theta.append(new_theta)
+        self.recorded_r.append(new_r)
 
 
 class CelestialBody():
@@ -134,15 +106,6 @@ class CelestialBody():
 
         self.recorded_theta = [self.start_theta]
         self.recorded_r = [self.r]
-    
-    def calculate_position_by_time(self, t, points=100):
-        dt = t/points
-        for i in np.linspace(0, t, points):
-            self.calculate_next_posistion(dt)
-        r, theta = self.recorded_r[-1], self.recorded_theta[-1]
-        self.reset
-        self.r, self.theta = r, theta
-        return r, theta
 
     def get_r(self, theta):
         ''' Get radius value for current angle theta.
@@ -171,12 +134,11 @@ class CelestialBody():
         self.recorded_r = [self.r]
 
 TheSun = Sun()
-TheComet = Comet("Comet", 3.33022*10**23, 19.785472*10**8*1000, 3*np.pi/4, 0, 1500)
+TheComet = Comet("Comet", 3.33022*10**23, 7.785472*10**8*1000, 3*np.pi/4, 100, 4500)
 
 Mercury = CelestialBody("Mercury", 3.33022*10**23, 57909227000, 0.20563593, 48.33167, -0.2*np.pi, [1,0.5,0])
 Venus = CelestialBody("Venus", 4.8675*10**24, 108208930000, 0.0068, 76.67069, 0.1*np.pi, [1,0,0.4])
 Earth = CelestialBody("Earth", 5.9726*10**24, 149598261000, 0.01671123, 348.73936, 0.8*np.pi, [0,1,0.3])
-# Earth = CelestialBody("Earth", M0, 149598261000, 0.01671123, 348.73936, 0.8*np.pi, [0,1,0.3])
 Mars = CelestialBody("Mars", 6.4171*10**23, 2.2794382*10**8*1000, 0.0933941, 49.57854, 1.15*np.pi, [1,0,0])
 Jupiter = CelestialBody("Jupiter", 1.8986*10**27, 7.785472*10**8*1000, 0.048775, 100.55615, -0.02*np.pi, [0.9,0.7,0.3])
 Saturn = CelestialBody("Saturn", 5.6846*10**26, 1429394069000, 0.055723219, 113.642, -0.08*np.pi, [0.6, 0.1, 0.3])
