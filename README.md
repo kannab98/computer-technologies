@@ -4,7 +4,7 @@
 Структура репозитория:
 
 - **preamble** -- ссылка не внешний
-  [git-репозиторий][https://github.com/kannab98/latex-preamble] c 
+  [git-репозиторий](https://github.com/kannab98/latex-preamble) c 
 преамбулой для LaTeX-отчетов. Используйте 
 ``` git clone --recursive ``` 
 при клонировании, если планируете использовать ТеХ-отчеты из репозитория.
