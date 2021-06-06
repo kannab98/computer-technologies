@@ -1,8 +1,6 @@
 \input{text/pre}
 
-\NewDocumentCommand{\codeword}{v}{%
-\texttt{\textcolor{gray}{#1}}%
-}
+\NewDocumentCommand{\cdw}{v}{\textsf{\textcolor[HTML]{2489F5}{#1}}}
 \input{python.tex}
 
 \title{Компьютерные технологии}
@@ -29,7 +27,6 @@
 Поскольку влиянием планет друг на друга принебрегается, их орбиты описываются определенным образом.
 Траектория орбиты представляет из себя эллипс, в фокусе которого расположено тяготеющее тело, в данном случае Солнце.
 
-\subsection{Описание движения планет}
 Уравнение эллипса орбиты в полярных координатах задается следующим образом:
 \begin{equation}
 	r = \frac{a(1-e^2)}{1 + e \cos(\theta + \alpha)},
@@ -46,7 +43,7 @@
 % Таким образом, для полного описания орбиты небесного тела необходимы следующие параметры
 \begin{figure}[h!]
 	\centering
-	\includegraphics[width=0.8\linewidth]{imgs_8/solar.png}
+	\includegraphics[width=0.5\linewidth]{imgs_8/solar.png}
 	\caption{Модель Солнечной системы}
     \label{fig:system}
 \end{figure}
@@ -86,16 +83,165 @@
 \section{Результаты моделирования}
 Описание и моделирование системы производится на языке Python.
 Начальными параметрами моделирования выступают первоначальные положения планет Солнечной системы,
-а также начальные координаты и скорость кометы.
+а также начальные координаты и скорость кометы. Параметры орбит планет считаются фиксированными и заданы предварительно
+на основе информации из открытых источников.
 
-Планеты и их движение описываются классом $\codeword{CelestialBody}$ в файле $\codeword{SolarSystem.py}$.
-Каждая планета - инстанция класса. Комета описывается отдельным классом $\codeword{Comet}$, в котором также 
-присутствует метод \codeword{evaluate_model}, который является основным в моделировании.
+Планеты и законы их движения описываются классом $\cdw{CelestialBody}$ в файле $\cdw{SolarSystem.py}$.
+Каждая планета - инстанция класса. Комета описывается отдельным классом $\cdw{Comet}$, в котором также 
+присутствует метод класса \cdw{evaluate_model}, который является основным в моделировании.
+
+В качетсве параметров кометы выступают масса, начальные координаты и скорости. Также нужно задать время моделирования
+\cdw{t_end} - до какого момента времени в секундах моделировать движение. Также есть возможность выбрать метод
+интгрирования, задав соответствующее строковое значение переменной \cdw{integration_method}
+\begin{lstlisting}[caption={Блок параметров симуляции},captionpos=b]
+	TheComet = Comet("Comet",
+                         8*10**22,    # Масса, кг
+                         1.5*10**12,  # Начальный радиус, м
+                         0.8*np.pi,   # Начальный угол, радианы
+                         0,           # Начальная радиальная скорость, м/c
+                         10000        # Начальная угловая скорость, м/с
+				         )
+	integration_method = 'Radau'
+	t_end = 20*10**8
+\end{lstlisting}
+\subsection{Скорость и координата кометы в зависимости от начальных параметров}
+Начальные параметры в тексте будем указывать как $m$ - масса кометы, $R_0$ - начальный радиус
+траектории кометы, $\theta_0$ - начальный угол, $v_r$ - начальная радиальная скорость,
+$v_\theta$ - начальная угловая скорость. В основном будет метод интегрирования "Radau" -
+метод Рунге-Кутты 5-го порядка. параметры моделирования будут указыаваться следующим образом
+$[m, R_0, \theta_0, v_r, v_\theta]$
+\begin{lstlisting}
+	"ConfigName": [8*10**22, 1.5*10**12, 0, 0, 10000]
+\end{lstlisting}
+
+
+\subsubsection*{Модель комета - Солнце}
+Рассмотрим простой случай, когда в модели отсутствуют другие планеты. Начальные параметры кометы:
+\begin{lstlisting}
+	"SunComet": [8*10**22, 1.5*10**12, 0, 0, 10000]
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.49\linewidth}
+        \centering
+		\includegraphics[width=1\linewidth]{imgs_8/rSunComet.png}
+		\caption{Координата $r(t)$}
+	\end{subfigure}
+	\begin{subfigure}{0.49\linewidth}
+        \centering
+		\includegraphics[width=1\linewidth]{imgs_8/vSunComet.png}
+		\caption{Скорости $V_r(t), V_\theta(t)$}
+	\end{subfigure}
+	\begin{subfigure}{0.49\linewidth}
+        \centering
+		\includegraphics[width=1\linewidth]{imgs_8/trjSunComet.png}
+		\caption{Траектория}
+    \end{subfigure}
+    \caption{Модель комета - Солнце.}
+    \label{fig:SunComet}
+\end{figure}
+На рис. \ref{fig:SunComet}(c) представлена траектория кометы - в данном случае, т.к. других планет нету, то комета
+невозмущенно вращается вокруг Солнца по эллипсу.
+\subsubsection*{Комета появляется внутри Солнечной системы}
+Если же мы, не меняя начальных параметров, "включим" влияние планет, картина сильно изменится:
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.49\linewidth}
+        \centering
+		\includegraphics[width=1\linewidth]{imgs_8/r.png}
+		\caption{Координата $r(t)$, а также координаты планет $r_i(t)$}
+	\end{subfigure}
+	\begin{subfigure}{0.49\linewidth}
+        \centering
+		\includegraphics[width=1\linewidth]{imgs_8/v.png}
+		\caption{Скорости $V_r(t), V_\theta(t)$}
+	\end{subfigure}
+	\begin{subfigure}{0.49\linewidth}
+        \centering
+		\includegraphics[width=1\linewidth]{imgs_8/trj.png}
+		\caption{Траектория кометы и планет}
+    \end{subfigure}
+    \caption{Результаты моделирования при "включении" влияния планет}
+    \label{fig:default}
+\end{figure}
+Траектория кометы становится сильно искаженной (см. рис. \ref{fig:default}), т.к. она подвергается сильному влиянию Сатурна и Юпитера.
+
+\subsubsection*{Комета прилетает извне Солнечной системы}
+Рассмотрим случай когда комета прилетает извне Солнечной системы, и проходит сквозь нее. Начальные параметры кометы:
+\begin{lstlisting}
+	"Outside": [8*10**22, 10**13, 0, -2000, 1000]
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.49\linewidth}
+        \centering
+		\includegraphics[width=1\linewidth]{imgs_8/rOutside.png}
+		\caption{Координата $r(t)$, а также координаты планет $r_i(t)$}
+	\end{subfigure}
+	\begin{subfigure}{0.49\linewidth}
+        \centering
+		\includegraphics[width=1\linewidth]{imgs_8/vOutside.png}
+		\caption{Скорости $V_r(t), V_\theta(t)$}
+	\end{subfigure}
+	\begin{subfigure}{0.49\linewidth}
+        \centering
+		\includegraphics[width=1\linewidth]{imgs_8/trjOutside.png}
+		\caption{Траектория}
+    \end{subfigure}
+    \caption{Комета прилетает извне Солнечной системы}
+    \label{fig:Outside}
+\end{figure}
+
+Как можно видеть (см. рис. \ref{fig:Outside}), комета была "поймана" Юпитером, а затем отправлена за пределы системы.
+
+\subsubsection*{Комета прилетает извне Солнечной системы с малым воздействием}
+Похожий сценарий может иметь совершенно другой исход.
+Например, планеты практически не подействуют на комету. Начальные параметры кометы:
+\begin{lstlisting}
+	"RunBy":[8*10**22, 10**13, 3.14, -9000, -1500]
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.49\linewidth}
+        \centering
+		\includegraphics[width=1\linewidth]{imgs_8/rRunBy.png}
+		\caption{Координата $r(t)$, а также координаты планет $r_i(t)$}
+	\end{subfigure}
+	\begin{subfigure}{0.49\linewidth}
+        \centering
+		\includegraphics[width=1\linewidth]{imgs_8/vRunBy.png}
+		\caption{Скорости $V_r(t), V_\theta(t)$}
+	\end{subfigure}
+	\begin{subfigure}{0.49\linewidth}
+        \centering
+		\includegraphics[width=1\linewidth]{imgs_8/trjRunBy.png}
+		\caption{Траектория}
+    \end{subfigure}
+	\caption{Комета прилетает извне Солнечной системы, и практически
+	не взаимодуйствует с планетами}
+    \label{fig:RunBy}
+\end{figure}
+Здесь (см. рис. \ref{fig:RunBy}) можно наблюдать близкую к гиперболической траекторию кометы -
+двигаясь по такой траектории тело сможет удалиться на бесконечность.
+\subsection{Оценка точности интегрирования}
+
+\section{Выводы}
+В работе была имплементирована модель Солнечной систсемы, смоделировано движение кометы
+и воздействие на ее траекторию гравитации планет и Солнца. 
+
+При малоразличных начальных параметрах можно получить совершенно разыне картины траекторий,
+т.е. система является хаотичной.
+
 
 \newpage
 \section{Исходный код}
-\lstinputlisting[label={lst:task8}, caption={Исходный код задания}]{SolarSystem.py}
-\lstinputlisting[label={lst:task8_2}, caption={Исходный код задания}]{simulation.py}
+\lstinputlisting[label={lst:task8}, caption={SolarSystem.py}]{SolarSystem.py}
+\lstinputlisting[label={lst:task8_2}, caption={simulation.py}]{simulation.py}
+\lstinputlisting[label={lst:task8_3}, caption={configs.py}]{configs.py}
 
 
 \end{document}
