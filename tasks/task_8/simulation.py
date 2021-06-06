@@ -4,7 +4,9 @@ import numpy as np
 from SolarSystem import System, Planets, Comet
 from configs import configs
 
-use_config = "RunBy"
+# Параметры кометы либо выбор заранее заданной конфигурации из configs.py,
+# либо указать use_config = None для ручной настройки.
+use_config = None
 if use_config:
     cfg = configs[use_config]
     TheComet = Comet("Comet", cfg[0], cfg[1], cfg[2], cfg[3], cfg[4])
@@ -17,21 +19,18 @@ else:
                      10000        # Начальная угловая скорость, м/с
                      )
 
-
 ### Параметры симуляции ###
 
-# Метод интегрирования в функцие np.solve_ivp()
-integration_method = 'Radau'
 # Время моделирования в секундах
-t_end = 40*10**8
-# t_end = 3.154*10**7  # Земной год
+t_end = 20*10**8
 # Шаг времени в секундах  
 dt = 2*10**4
 # Временные отсчеты в которых посчитать значение координат
 t = np.arange(0, t_end, dt)
 
 # Моделируем движение кометы в Солнечной системе
-# res = TheComet.evaluate_model([0, t_end], [System[0]], t_eval=t, method=integration_method)
+# Метод интегрирования в функцие np.solve_ivp()
+integration_method = 'Radau'
 res = TheComet.evaluate_model([0, t_end], System, t_eval=t, method=integration_method)
 res_time = res.t
 comet_coords = res.y[0:2]
